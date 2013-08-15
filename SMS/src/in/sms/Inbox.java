@@ -77,11 +77,7 @@ public class Inbox extends ListActivity {
 
 		SMSData sms = (SMSData) getListAdapter().getItem(position);
 		String msg = sms.getBody();
-		DbHandler db = new DbHandler(getApplicationContext());
-		db.write();
-		db.putEntry(sms.getBody(), sms.getNumber());
-		db.close();
-		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+				
 		if (sms.getStatus().contentEquals("0")) {
 			// update the Status of the message in the data base
 

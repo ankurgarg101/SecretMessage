@@ -1,8 +1,11 @@
 package in.sms;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.telephony.SmsManager;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,8 +23,9 @@ import android.widget.Toast;
 
 public class WriteNew extends Activity implements OnClickListener {
 
+	protected static final int RESULT_SPEECH = 1;
 	EditText etNumber, etMsg;
-	Button send, bInbox;
+	Button send, bInbox, speechToText;
 	String msg = "", numberString;
 
 	@Override
@@ -28,16 +33,46 @@ public class WriteNew extends Activity implements OnClickListener {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.write);
-		
-		if(CheckForBundle()!=null);
+		initialize();
+	/*	if(CheckForBundle()!=null);
 		Toast.makeText(this, "true", Toast.LENGTH_LONG).show();
-			SetNumberFromBundle(CheckForBundle());
-		etNumber = (EditText) findViewById(R.id.etPhoneNumber);
-		etMsg = (EditText) findViewById(R.id.etMessage);
-		send = (Button) findViewById(R.id.sendSms);
-		bInbox = (Button) findViewById(R.id.bInbox);
+			SetNumberFromBundle(CheckForBundle());*/
+		etMsg.setText("gfdhg");
 		send.setOnClickListener(this);
 		bInbox.setOnClickListener(this);
+		speechToText.setOnClickListener(this);
+	}
+	
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+ 
+        switch (requestCode) {
+        case RESULT_SPEECH: {
+            if (resultCode == RESULT_OK && null != data) {
+ 
+                ArrayList<String> text = data
+                        .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+ 
+                etMsg.setText(text.get(0));
+            }
+            else
+            {
+            	etMsg.setText("dfd");
+            }
+            break;}
+        }
+ 
+        }
+
+		private void initialize() {
+		// TODO Auto-generated method stub
+			
+			speechToText = (Button) findViewById(R.id.speechToText);
+			etNumber = (EditText) findViewById(R.id.etPhoneNumber);
+			etMsg = (EditText) findViewById(R.id.etMessage);
+			send = (Button) findViewById(R.id.sendSms);
+			bInbox = (Button) findViewById(R.id.bInbox);
 	}
 
 		@Override
@@ -72,8 +107,24 @@ public class WriteNew extends Activity implements OnClickListener {
 				d.show();
 			}
 			break;
-		}
+		
+		case R.id.speechToText :
+			
+			Intent stt = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+			stt.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
+			try {
+                startActivityForResult(stt, RESULT_SPEECH);
+                etMsg.setText("working");
+            } catch (Exception a) {
+                Toast t = Toast.makeText(getApplicationContext(),
+                        a.toString(),
+                        Toast.LENGTH_LONG);
+                t.show();
+            }
+			
+			break;
 
+		}
 	}
 
 	private void sendMessage(String number, String message) {

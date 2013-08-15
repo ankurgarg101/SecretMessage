@@ -11,7 +11,7 @@ import android.widget.ListView;
 
 public class Home extends ListActivity {
 
-	String options[] = new String[] {"WriteNew" , "Inbox" , "Outbox", "Delete"};
+	String options[] = new String[] {"WriteNew" , "Inbox" , "Outbox", "Delete", "Secret"};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

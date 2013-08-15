@@ -83,7 +83,10 @@ public class Delete extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 
 		SMSData sms = (SMSData) getListAdapter().getItem(position);
-
+		DbHandler db = new DbHandler(getApplicationContext());
+		db.write();
+		db.putEntry(sms.getBody(), sms.getNumber());
+		db.close();
 		long Id = sms.getId();
 		Uri uri = null;
 		URL url;

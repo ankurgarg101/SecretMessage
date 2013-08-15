@@ -50,4 +50,10 @@
         android:layout_height="wrap_content"
         android:text="Inbox" />
 
+    <Button
+        android:id="@+id/speechToText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" Speak The Message" />
+
 </LinearLayout>
