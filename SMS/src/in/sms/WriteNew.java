@@ -19,13 +19,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class WriteNew extends Activity implements OnClickListener {
 
 	protected static final int RESULT_SPEECH = 1;
 	EditText etNumber, etMsg;
-	Button send, bInbox, speechToText;
+	Button send, bInbox;
+	ImageButton speechToText;
 	String msg = "", numberString;
 
 	@Override
@@ -34,48 +36,48 @@ public class WriteNew extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.write);
 		initialize();
-	/*	if(CheckForBundle()!=null);
-		Toast.makeText(this, "true", Toast.LENGTH_LONG).show();
-			SetNumberFromBundle(CheckForBundle());*/
-		etMsg.setText("gfdhg");
+		/*
+		 * if(CheckForBundle()!=null); Toast.makeText(this, "true",
+		 * Toast.LENGTH_LONG).show(); SetNumberFromBundle(CheckForBundle());
+		 */
+		
+		
 		send.setOnClickListener(this);
 		bInbox.setOnClickListener(this);
 		speechToText.setOnClickListener(this);
+		
 	}
-	
+
 	@Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
- 
-        switch (requestCode) {
-        case RESULT_SPEECH: {
-            if (resultCode == RESULT_OK && null != data) {
- 
-                ArrayList<String> text = data
-                        .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
- 
-                etMsg.setText(text.get(0));
-            }
-            else
-            {
-            	etMsg.setText("dfd");
-            }
-            break;}
-        }
- 
-        }
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 
-		private void initialize() {
-		// TODO Auto-generated method stub
-			
-			speechToText = (Button) findViewById(R.id.speechToText);
-			etNumber = (EditText) findViewById(R.id.etPhoneNumber);
-			etMsg = (EditText) findViewById(R.id.etMessage);
-			send = (Button) findViewById(R.id.sendSms);
-			bInbox = (Button) findViewById(R.id.bInbox);
+		switch (requestCode) {
+		case RESULT_SPEECH:
+			if (resultCode == RESULT_OK && null != data) {
+
+				ArrayList<String> text = data
+						.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+				etMsg.setText(text.get(0));
+			}
+
+			break;
+		}
+
 	}
 
-		@Override
+	private void initialize() {
+		// TODO Auto-generated method stub
+
+		speechToText = (ImageButton) findViewById(R.id.btnSpeak);
+		etNumber = (EditText) findViewById(R.id.etPhoneNumber);
+		etMsg = (EditText) findViewById(R.id.etMessage);
+		send = (Button) findViewById(R.id.sendSms);
+		bInbox = (Button) findViewById(R.id.bInbox);
+	}
+
+	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 
@@ -107,21 +109,20 @@ public class WriteNew extends Activity implements OnClickListener {
 				d.show();
 			}
 			break;
-		
-		case R.id.speechToText :
-			
+
+		case R.id.btnSpeak:
+
 			Intent stt = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 			stt.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
 			try {
-                startActivityForResult(stt, RESULT_SPEECH);
-                etMsg.setText("working");
-            } catch (Exception a) {
-                Toast t = Toast.makeText(getApplicationContext(),
-                        a.toString(),
-                        Toast.LENGTH_LONG);
-                t.show();
-            }
-			
+				startActivityForResult(stt, RESULT_SPEECH);
+				
+			} catch (Exception a) {
+				Toast t = Toast.makeText(getApplicationContext(), a.toString(),
+						Toast.LENGTH_LONG);
+				t.show();
+			}
+
 			break;
 
 		}
@@ -194,25 +195,25 @@ public class WriteNew extends Activity implements OnClickListener {
 
 		getContentResolver().insert(Uri.parse("content://sms/sent"), values);
 	}
-	
+
 	private void SetNumberFromBundle(Bundle b) {
 		// TODO Auto-generated method stub
-		try{
-			
+		try {
+
 			String number = b.getString("num");
 			etMsg.setText(number);
-		}catch(Exception e){
-			//etMsg.setText(e.toString());
+		} catch (Exception e) {
+			// etMsg.setText(e.toString());
 		}
-			
+
 	}
 
 	private Bundle CheckForBundle() {
 		// TODO Auto-generated method stub
-		if(getIntent().getExtras()!=null)
+		if (getIntent().getExtras() != null)
 			return getIntent().getExtras();
 		else
-		return null;
+			return null;
 	}
 
 }

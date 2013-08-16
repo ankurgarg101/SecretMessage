@@ -15,16 +15,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Delete extends ListActivity {
+public class MoveToSecret extends ListActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		// NotificationManager nm;
-		String number = null;
 
-		// Cancel the Notification
 		List<SMSData> smsList = new ArrayList<SMSData>();
 
 		Uri uriInbox = Uri.parse("content://sms/inbox");
@@ -83,26 +80,30 @@ public class Delete extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 
 		SMSData sms = (SMSData) getListAdapter().getItem(position);
+		DbHandler db = new DbHandler(getApplicationContext());
+		db.write();
+		db.putEntry(sms.getBody(), sms.getNumber());
+		db.close();
 		long Id = sms.getId();
 		Uri uri = null;
-		URL url;
-		
-			uri = Uri.parse("content://sms/inbox/");
-			try {
-				Cursor c = getContentResolver().query(uri, null, null, null, null);
-				//c.moveToFirst();
-				getApplicationContext().getContentResolver().delete(uri,
-						"body=" + sms.getBody(), null);
-				Toast.makeText(getApplicationContext(), sms.getBody(),
-						Toast.LENGTH_SHORT).show();
-				String msg = "Deleted From Inbox";
-				Dialog d = new Dialog(this);
-				d.setTitle("Unable To Delete");
-				TextView tv = new TextView(this);
-				tv.setText(msg);
-				d.setContentView(tv);
-				d.show();
-			}catch (Exception e) {
+
+		uri = Uri.parse("content://sms/inbox/");
+		try {
+			// Cursor c = getContentResolver().query(uri, null, null, null,
+			// null);
+			// c.moveToFirst();
+			getApplicationContext().getContentResolver().delete(uri,
+					"body=" + sms.getBody(), null);
+			Toast.makeText(getApplicationContext(), sms.getBody(),
+					Toast.LENGTH_SHORT).show();
+			String msg = "Deleted From Inbox";
+			Dialog d = new Dialog(this);
+			d.setTitle("Unable To Delete");
+			TextView tv = new TextView(this);
+			tv.setText(msg);
+			d.setContentView(tv);
+			d.show();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			String error = e.toString();
 			Dialog d = new Dialog(this);
@@ -112,6 +113,13 @@ public class Delete extends ListActivity {
 			d.setContentView(tv);
 			d.show();
 		}
-	}	
+		String msg = "Moved To Secret Database";
+		Dialog d = new Dialog(this);
+		d.setTitle("Unable To Delete");
+		TextView tv = new TextView(this);
+		tv.setText(msg);
+		d.setContentView(tv);
+		d.show();
+	}
 
 }

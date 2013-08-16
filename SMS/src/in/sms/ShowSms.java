@@ -28,7 +28,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.received);
-		 tts = new TextToSpeech(this, this);
+		
 		bReply = (Button) findViewById(R.id.bReply);
 		textToSpeech = (Button) findViewById(R.id.textToSpeech);
 		smsView = (TextView) findViewById(R.id.smsView);
@@ -47,6 +47,8 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onPause();
+		tts.stop();
+		tts.shutdown();
 		name = (String) senderName.getText();
 		msg = (String) smsView.getText();
 
@@ -67,7 +69,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 		switch (v.getId()) {
 		case R.id.bReply:
 
-			Intent i = new Intent(this, Secret.class);
+			Intent i = new Intent(this, ViewSecret.class);
 			startActivity(i);
 
 			/*
@@ -85,6 +87,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 	private void speakOut() {
 		// TODO Auto-generated method stub
 		
+         tts = new TextToSpeech(getApplicationContext(), this); 
 		 String text = smsView.getText().toString();
 		 tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
