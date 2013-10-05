@@ -3,28 +3,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-<LinearLayout 
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="To : "
-        android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <EditText
-        android:id="@+id/etPhoneNumber"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:phoneNumber="true"
-        android:maxLines="1"
-         >
+        android:orientation="horizontal" >
 
-        <requestFocus />
-    </EditText>
-</LinearLayout>
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To : "
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/etPhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+           >
+
+            <requestFocus />
+        </EditText>
+    </LinearLayout>
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
@@ -36,13 +37,17 @@
         android:id="@+id/etMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="200dp"  />
+        android:minHeight="200dp" />
 
-       <Button
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+    <Button
         android:id="@+id/sendSms"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send Message" />
+        android:text="Send" />
 
     <Button
         android:id="@+id/bInbox"
@@ -50,6 +55,7 @@
         android:layout_height="wrap_content"
         android:text="Inbox" />
 
+    </LinearLayout>
     <ImageButton
         android:id="@+id/btnSpeak"
         android:layout_width="fill_parent"
@@ -57,7 +63,7 @@
         android:layout_margin="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
-        android:contentDescription="@string/speak"
+        android:contentDescription="speak"
         android:src="@android:drawable/ic_btn_speak_now" />
 
 </LinearLayout>

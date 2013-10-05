@@ -47,7 +47,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		tts.stop();
+		
 		tts.shutdown();
 		name = (String) senderName.getText();
 		msg = (String) smsView.getText();
@@ -79,6 +79,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 			 */
 			break;
 		case R.id.textToSpeech:
+			System.out.println("tts");
 			speakOut();			
 			break;
 		}
@@ -105,6 +106,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
 	public void onInit(int status) {
 		// TODO Auto-generated method stub
 		if (status == TextToSpeech.SUCCESS) {
+			System.out.println("succ");
 			 
             int result = tts.setLanguage(Locale.ENGLISH);
  
@@ -113,7 +115,7 @@ public class ShowSms extends Activity implements OnClickListener, TextToSpeech.O
                 Log.e("TTS", "This Language is not supported");
             } else {
                 textToSpeech.setEnabled(true);
-                speakOut();
+                
             }
  
         } else {

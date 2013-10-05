@@ -14,7 +14,7 @@ import android.widget.ListView;
 public class Home extends ListActivity {
 
 	String options[] = new String[] { "WriteNew", "Inbox", "Outbox", "Delete",
-			"MoveToSecret", "ViewSecrets" };
+			"MoveToSecret", "ViewSecret" };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

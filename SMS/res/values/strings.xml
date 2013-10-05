@@ -2,8 +2,9 @@
 <resources>
 
     <string name="app_name">SMS</string>
-    <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-    <string name="speak">Speak the Message</string>
+    <string name="menu_settings">Settings</string>
+    
+    <color name="brown">#74300e</color>
 
 </resources>

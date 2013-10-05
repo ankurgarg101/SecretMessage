@@ -82,7 +82,7 @@ public class MoveToSecret extends ListActivity {
 		SMSData sms = (SMSData) getListAdapter().getItem(position);
 		DbHandler db = new DbHandler(getApplicationContext());
 		db.write();
-		db.putEntry(sms.getBody(), sms.getNumber());
+		db.putEntry(sms.getName(), sms.getNumber(), sms.getBody());
 		db.close();
 		long Id = sms.getId();
 		Uri uri = null;
@@ -115,7 +115,7 @@ public class MoveToSecret extends ListActivity {
 		}
 		String msg = "Moved To Secret Database";
 		Dialog d = new Dialog(this);
-		d.setTitle("Unable To Delete");
+		d.setTitle("Done");
 		TextView tv = new TextView(this);
 		tv.setText(msg);
 		d.setContentView(tv);

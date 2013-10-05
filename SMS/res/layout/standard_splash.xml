@@ -1,0 +1,121 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Splash"
+    android:background="#0b92fa">
+    
+    <ImageView
+        android:src="@drawable/mobile_one"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:visibility="visible"
+        android:id="@+id/cell1"/>
+    <ImageView
+        android:src="@drawable/mobile_two"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:visibility="visible"
+        android:id="@+id/cell2"/>
+    
+    <ImageView
+        android:src="@drawable/windows"
+        android:adjustViewBounds="true"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:visibility="invisible"
+        android:id="@+id/windows_icon"/>
+    
+    
+    <ImageView
+        android:src="@drawable/ap_1"
+        android:adjustViewBounds="true"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:visibility="invisible"
+        android:id="@+id/android_icon"/>
+    
+    
+    <ImageView
+        android:src="@drawable/bb"
+        android:adjustViewBounds="true"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:visibility="invisible"
+        android:id="@+id/bb_icon"/>
+    
+    
+    <ImageView
+        android:src="@drawable/apple"
+        android:adjustViewBounds="true"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:visibility="invisible"
+        android:id="@+id/apple_icon"/>
+    
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:id="@+id/name"
+        android:visibility="invisible">
+        
+    
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mobile"
+        android:fontFamily="Roboto"
+        android:textStyle="bold"
+        android:textSize="40sp"
+        android:textColor="@color/brown"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/mobile"
+        />
+    
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Development"
+        android:fontFamily="Roboto"
+        android:textStyle="bold"
+        android:textSize="40sp"
+        android:textColor="@color/brown"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/development"/>
+    
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Group"
+        android:fontFamily="Roboto"
+        android:textStyle="bold"
+        android:textSize="40sp"
+        android:textColor="@color/brown"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/group"/>
+    
+    </LinearLayout>
+    
+    <!-- <ImageView 
+        android:src="@drawable/sds"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:id="@+id/sds"
+        android:visibility="invisible"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"/> -->
+    
+    <ImageButton
+        android:src="@drawable/skip_selector"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:padding="15dp"
+        android:background="#00ffffff"
+        android:scaleType="fitXY"
+        android:id="@+id/skip"/>
+
+</RelativeLayout>

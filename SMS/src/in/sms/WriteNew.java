@@ -59,7 +59,8 @@ public class WriteNew extends Activity implements OnClickListener {
 				ArrayList<String> text = data
 						.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
-				etMsg.setText(text.get(0));
+				String newString = etMsg.getText().toString() + text.get(0);
+				etMsg.setText(newString);
 			}
 
 			break;

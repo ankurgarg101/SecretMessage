@@ -91,7 +91,7 @@ public class Delete extends ListActivity {
 			try {
 				Cursor c = getContentResolver().query(uri, null, null, null, null);
 				//c.moveToFirst();
-				getApplicationContext().getContentResolver().delete(uri,
+				getContentResolver().delete(uri,
 						"body=" + sms.getBody(), null);
 				Toast.makeText(getApplicationContext(), sms.getBody(),
 						Toast.LENGTH_SHORT).show();

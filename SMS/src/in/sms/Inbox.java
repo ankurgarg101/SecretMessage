@@ -3,6 +3,7 @@ package in.sms;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Inbox extends ListActivity {
@@ -20,35 +22,46 @@ public class Inbox extends ListActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		try {
+			// Cancel the Notification
+			List<SMSData> smsList = new ArrayList<SMSData>();
 
-		// Cancel the Notification
-		List<SMSData> smsList = new ArrayList<SMSData>();
+			Uri uriInbox = Uri.parse("content://sms/inbox");
+			Cursor c = getContentResolver().query(uriInbox, null, null, null,
+					null);
+			// startManagingCursor(c);
 
-		Uri uriInbox = Uri.parse("content://sms/inbox");
-		Cursor c = getContentResolver().query(uriInbox, null, null, null, null);
-		// startManagingCursor(c);
-
-		// Read the sms data and store it in the list
-		if (c.moveToFirst()) {
-			while (c.moveToNext()) {
-				SMSData sms = new SMSData();
-				sms.setBody(c.getString(c.getColumnIndexOrThrow("body"))
-						.toString());
-				sms.setNumber(c.getString(c.getColumnIndexOrThrow("address"))
-						.toString());
-				sms.setDate(c.getLong(c.getColumnIndexOrThrow("date")));
-				// sms.setPersonId(c.getInt(c.getColumnIndexOrThrow("person")));
-				sms.setName(GetContactName(c.getString(
-						c.getColumnIndexOrThrow("address")).toString()));
-				sms.setStatus(c.getString(c.getColumnIndexOrThrow("read")));
-				smsList.add(sms);
-				c.moveToNext();
+			// Read the sms data and store it in the list
+			if (c.moveToFirst()) {
+				while (c.moveToNext()) {
+					SMSData sms = new SMSData();
+					sms.setId(1);
+					sms.setBody(c.getString(c.getColumnIndexOrThrow("body"))
+							.toString());
+					sms.setNumber(c.getString(
+							c.getColumnIndexOrThrow("address")).toString());
+					sms.setDate(c.getLong(c.getColumnIndexOrThrow("date")));
+					// sms.setPersonId(c.getInt(c.getColumnIndexOrThrow("person")));
+					sms.setName(GetContactName(c.getString(
+							c.getColumnIndexOrThrow("address")).toString()));
+					sms.setStatus(c.getString(c.getColumnIndexOrThrow("read")));
+					smsList.add(sms);
+					c.moveToNext();
+				}
 			}
-		}
-		c.close();
+			c.close();
 
-		// Set smsList in the ListAdapter
-		setListAdapter(new InboxListAdapter(this, smsList));
+			// Set smsList in the ListAdapter
+			setListAdapter(new InboxListAdapter(this, smsList));
+		} catch (Exception e) {
+			String error = e.toString();
+			Dialog d = new Dialog(this);
+			d.setTitle("Unable To Delete");
+			TextView tv = new TextView(this);
+			tv.setText(error);
+			d.setContentView(tv);
+			d.show();
+		}
 
 	}
 
@@ -77,7 +90,7 @@ public class Inbox extends ListActivity {
 
 		SMSData sms = (SMSData) getListAdapter().getItem(position);
 		String msg = sms.getBody();
-				
+
 		if (sms.getStatus().contentEquals("0")) {
 			// update the Status of the message in the data base
 
