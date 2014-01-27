@@ -1,10 +1,9 @@
 package in.sms;
 
-import android.os.Bundle;
-import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
-import android.view.Menu;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,8 +12,8 @@ import android.widget.ListView;
 
 public class Home extends ListActivity {
 
-	String options[] = new String[] { "WriteNew", "Inbox", "Outbox", "Delete",
-			"MoveToSecret", "ViewSecret" };
+	String options[] = new String[] {"Inbox", "Outbox",
+			"ViewSecret"};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +29,10 @@ public class Home extends ListActivity {
 		// setContentView(R.layout.home);
 		String opt = options[position];
 		try {
-			Class toHome = Class.forName("in.sms." + opt);
-			Intent home = new Intent(Home.this, toHome);
-			startActivity(home);
+				Class toHome = Class.forName("in.sms." + opt);
+				Intent home = new Intent(Home.this, toHome);
+				startActivity(home);
+						
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,8 +53,15 @@ public class Home extends ListActivity {
 		// TODO Auto-generated method stub
 		switch (item.getItemId()) {
 		case R.id.abt:
-			Intent i = new Intent(this, About.class);
-			startActivity(i);
+			try{
+				Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+		        sendIntent.putExtra("sms_body", ""); 
+		        sendIntent.setType("vnd.android-dir/mms-sms");
+		        startActivity(sendIntent);
+			}catch(Exception e){
+				Log.e("menu",e.toString());
+			}
+			
 			break;
 		case R.id.password:
 			Intent a = new Intent(this, Password.class);

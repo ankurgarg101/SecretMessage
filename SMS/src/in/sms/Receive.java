@@ -18,6 +18,7 @@ public class Receive extends BroadcastReceiver {
 	Notification n;
 	static final int uniqueId = 2323;
 	String body,sender;
+	long id;
 	private long length;
 	
 	@Override
@@ -39,17 +40,24 @@ public class Receive extends BroadcastReceiver {
 				msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
 				sender =  msgs[i].getOriginatingAddress();
 				body = msgs[i].getMessageBody().toString();
-				body += "\n";
+				
 			}
 			
-			DbHandler fetchNumber = new DbHandler(context);
-			for(length=0;;length++)
+			SecretDb fetchNumber = new SecretDb(context);
+			fetchNumber.write();
+			long length = fetchNumber.getSize();
+			for(;length>=0;length--)
 			{
 				String temp = fetchNumber.getPhoneNumber(length);
 				if(temp.contentEquals(""))
 					break;
 				else if(temp.contentEquals(sender))
 				{
+					String name = fetchNumber.getName(length);
+					long date = System.currentTimeMillis();
+					fetchNumber.write();
+					fetchNumber.putEntry(name, sender, body, 0, date);
+					fetchNumber.close();
 					abortBroadcast();
 				}
 			}

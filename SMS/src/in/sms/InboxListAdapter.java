@@ -33,18 +33,26 @@ public class InboxListAdapter extends ArrayAdapter<SMSData> {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		View rowView = inflater.inflate(R.layout.inbox, parent, false);
-		TextView receiverNumber = (TextView) rowView.findViewById(R.id.tvNumber);
+		
+		
+		TextView contact = (TextView) rowView.findViewById(R.id.contact);
 		TextView sentMsg = (TextView) rowView.findViewById(R.id.tvMsg);
 		ivStatus = (ImageView) rowView.findViewById(R.id.msgStatus);
-		receiverNumber.setText(smsList.get(position).getNumber());
-		sentMsg.setText(smsList.get(position).getName());
+		
+		if(!smsList.get(position).getName().contentEquals(""))
+			contact.setText(smsList.get(position).getName());
+		else
+			contact.setText(smsList.get(position).getNumber());
+		
+		sentMsg.setText(smsList.get(position).getBody());
 		String strStatus = smsList.get(position).getStatus();
 		int intStatus = Integer.parseInt(strStatus);
-		decideImg(intStatus);
+		setImg(intStatus);
 		return rowView;
 	}
 
-	private void decideImg(int status) {
+	//sets the image corresponding to read or unread message
+	private void setImg(int status) {
 		// TODO Auto-generated method stub
 		if (status == 0) {
 			InputStream is = context.getResources().openRawResource(

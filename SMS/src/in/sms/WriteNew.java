@@ -1,11 +1,11 @@
 package in.sms;
 
+import java.sql.Date;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -34,18 +34,31 @@ public class WriteNew extends Activity implements OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.write);
-		initialize();
-		/*
-		 * if(CheckForBundle()!=null); Toast.makeText(this, "true",
-		 * Toast.LENGTH_LONG).show(); SetNumberFromBundle(CheckForBundle());
-		 */
 		
-		
+		Intent i = new Intent(Intent.ACTION_VIEW);
+		//i.setType("plain/text");
+		startActivity(i);
+	
 		send.setOnClickListener(this);
 		bInbox.setOnClickListener(this);
 		speechToText.setOnClickListener(this);
+	}
+
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		String number = etNumber.getText().toString();
+		String msg = etMsg.getText().toString();
 		
+		long date = 0;
+		Date d = new Date(date);
+		
+		System.out.println(date);
+		DraftDb drDb = new DraftDb(this);
+		drDb.write();
+		drDb.putEntry(number, msg, date);
+		drDb.close();
+		super.onBackPressed();
 	}
 
 	@Override
@@ -65,7 +78,6 @@ public class WriteNew extends Activity implements OnClickListener {
 
 			break;
 		}
-
 	}
 
 	private void initialize() {
@@ -117,7 +129,7 @@ public class WriteNew extends Activity implements OnClickListener {
 			stt.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
 			try {
 				startActivityForResult(stt, RESULT_SPEECH);
-				
+
 			} catch (Exception a) {
 				Toast t = Toast.makeText(getApplicationContext(), a.toString(),
 						Toast.LENGTH_LONG);

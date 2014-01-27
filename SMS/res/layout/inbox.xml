@@ -19,15 +19,16 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
     <TextView
-        android:id="@+id/tvNumber"
+        android:id="@+id/contact"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:text="" />
 
     <TextView
         android:id="@+id/tvMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:text=""
+        android:maxLines="1" />
       </LinearLayout>
 </LinearLayout>

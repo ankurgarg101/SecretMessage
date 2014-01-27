@@ -1,112 +1,241 @@
 package in.sms;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Dialog;
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-public class Inbox extends ListActivity {
+public class Inbox extends ListActivity implements OnItemClickListener,
+		OnItemLongClickListener {
 
-	// NotificationManager nm;
 	String number = null;
+	String body;
+	long date;
+	long id;
+	int personId;
+	String name;
+	String status;
+	String d = "";
+	String msg;
+	String num;
+	String nameToBeStored;
+	long dateToBeStored;
+	long idToBeStored;
+	String statusToBeStored;
+	ListView lv;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		lv = getListView();
+		lv.setOnItemLongClickListener(this);
+		lv.setOnItemClickListener(this);
+		registerForContextMenu(lv);
+		lv.setOnCreateContextMenuListener(this);
+
 		try {
-			// Cancel the Notification
+
 			List<SMSData> smsList = new ArrayList<SMSData>();
 
-			Uri uriInbox = Uri.parse("content://sms/inbox");
-			Cursor c = getContentResolver().query(uriInbox, null, null, null,
+			Uri uriInbox = Uri.parse("content://sms/inbox/");
+			Cursor cur = getContentResolver().query(uriInbox, null, null, null,
 					null);
 			// startManagingCursor(c);
 
 			// Read the sms data and store it in the list
-			if (c.moveToFirst()) {
-				while (c.moveToNext()) {
+			if (cur.moveToFirst()) {
+				while (cur.moveToNext()) {
+
+					// fetching datasets from the columns of the inbox databse
+					body = cur.getString(cur.getColumnIndexOrThrow("body"))
+							.toString();
+					id = cur.getLong(cur.getColumnIndex("_id"));
+					number = cur
+							.getString(cur.getColumnIndexOrThrow("address"))
+							.toString();
+					date = cur.getLong(cur.getColumnIndexOrThrow("date"));
+					name = GetContactName(this,
+							cur.getString(cur.getColumnIndexOrThrow("address"))
+									.toString());
+					status = cur.getString(cur.getColumnIndexOrThrow("read"));
+					personId = cur.getInt(cur.getColumnIndexOrThrow("person"));
+
+					d += id + " : " + name + "\n";
+
+					// putting all the data in smsData class object and the
+					// pushing this object in the array
 					SMSData sms = new SMSData();
-					sms.setId(1);
-					sms.setBody(c.getString(c.getColumnIndexOrThrow("body"))
-							.toString());
-					sms.setNumber(c.getString(
-							c.getColumnIndexOrThrow("address")).toString());
-					sms.setDate(c.getLong(c.getColumnIndexOrThrow("date")));
-					// sms.setPersonId(c.getInt(c.getColumnIndexOrThrow("person")));
-					sms.setName(GetContactName(c.getString(
-							c.getColumnIndexOrThrow("address")).toString()));
-					sms.setStatus(c.getString(c.getColumnIndexOrThrow("read")));
+					sms.setId(id);
+					sms.setBody(body);
+					sms.setNumber(number);
+					sms.setDate(date);
+					sms.setPersonId(personId);
+					sms.setName(name);
+					sms.setStatus(status);
 					smsList.add(sms);
-					c.moveToNext();
+					cur.moveToNext();
 				}
 			}
-			c.close();
+			cur.close();
 
-			// Set smsList in the ListAdapter
+			// Set smsList in the ListAdapter using the array of smsData as a
+			// resource
 			setListAdapter(new InboxListAdapter(this, smsList));
+
 		} catch (Exception e) {
-			String error = e.toString();
-			Dialog d = new Dialog(this);
-			d.setTitle("Unable To Delete");
-			TextView tv = new TextView(this);
-			tv.setText(error);
-			d.setContentView(tv);
-			d.show();
+			Log.e("Inbox Read Error", e.toString());
 		}
 
 	}
 
-	private String GetContactName(String phoneNumber) {
-		String contactName = "Contact is not Saved";
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+		menu.setHeaderTitle("options");
+		String[] menuItems = { "Delete", "Move to Secret", "Info" };
+		for (int i = 0; i < menuItems.length; i++) {
+			menu.add(Menu.NONE, i, i, menuItems[i]);
+		}
+
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
+				.getMenuInfo();
+		int menuItemIndex = item.getItemId();
+		String[] menuItems = { "Delete", "Move to Secret", "Info" };
+		String menuItemName = menuItems[menuItemIndex];
+
+		if (menuItemIndex == 0) {
+			Delete del = new Delete(this, idToBeStored);
+			Intent refresh = new Intent(this,Inbox.class);
+			startActivity(refresh);
+			
+		} else if (menuItemIndex == 1) {
+			MoveToSecret mTs = new MoveToSecret();
+			mTs.moveToSecretDb(this, nameToBeStored, num, msg, idToBeStored,
+					dateToBeStored);
+			Intent refresh = new Intent(this,Inbox.class);
+			startActivity(refresh);
+		} else {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Message Information");
+
+			String d = nameToBeStored;
+			SimpleDateFormat dateFormat = new SimpleDateFormat(
+					"yyyy-MM-dd hh:mm:ss");
+			// Date dateI = new Date(dateToBeStored);
+			String strDate = dateFormat.format(dateToBeStored);
+			if (nameToBeStored.contentEquals(""))
+				d = num;
+			String information = "Type : Text Message \n" + "From : " + d
+					+ "\n" + "Received : " + strDate;
+
+			builder.setMessage(information);
+			builder.setNegativeButton("OK", new OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					dialog.cancel();
+				}
+			});
+
+			AlertDialog viewInfo = builder.create();
+			viewInfo.show();
+		}
+
+		return true;
+	}
+
+	private String GetContactName(Context context, String phoneNumber) {
+		String contactName = "";
 		// TODO Auto-generated method stub
 		// define the columns I want the query to return
 
-		String[] projection = new String[] { "display_name" };
+		String[] projection = new String[] { ContactsContract.PhoneLookup.DISPLAY_NAME };
 		// encode the phone number and build the filter URI
-		Uri contactUri = Uri
-				.parse("content://com.android.contacts/phone_lookup");
-		contactUri = Uri.withAppendedPath(contactUri, Uri.encode(phoneNumber));
+		Uri contactUri = Uri.withAppendedPath(
+				ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+				Uri.encode(number));
 		// query time
-		Cursor cursor = this.getContentResolver().query(contactUri, projection,
-				null, null, null);
+		Cursor cursor = getApplicationContext().getContentResolver().query(
+				contactUri, projection, null, null, null);
 
 		if (cursor.moveToFirst())
-			contactName = cursor.getString(0);
+			contactName = cursor.getString(cursor
+					.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
 		cursor.close();
 		return contactName;
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-
-		SMSData sms = (SMSData) getListAdapter().getItem(position);
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		// TODO Auto-generated method stub
+		SMSData sms = (SMSData) getListAdapter().getItem(arg2);
 		String msg = sms.getBody();
 
+		Log.e("click", "short");
 		if (sms.getStatus().contentEquals("0")) {
 			// update the Status of the message in the data base
 
-			Toast.makeText(getApplicationContext(), "read!", Toast.LENGTH_SHORT)
-					.show();
-			// refresh the Inbox Activity
-			// Intent intent = new Intent(this,Inbox.class);
-			// startActivity(intent);
-		}
-		Bundle b = new Bundle();
-		b.putString("sms", msg);
-		b.putString("name", sms.getName());
-		b.putString("number", sms.getNumber());
-		Intent view = new Intent(this, ShowSms.class);
-		view.putExtras(b);
-		startActivity(view);
+			ContentValues changeStatus = new ContentValues();
+			changeStatus.put("read", true);
+			// changeStatus
+			getContentResolver().update(Uri.parse("content://sms/inbox"),
+					changeStatus, "body=?", new String[] { sms.getBody() });
 
+		}
+		Bundle showBundle = new Bundle();
+		showBundle.putString("sms", msg);
+		showBundle.putString("name", sms.getName());
+		showBundle.putString("number", sms.getNumber());
+		showBundle.putString("from", "inbox");
+		Intent view = new Intent(this, ShowSms.class);
+		view.putExtras(showBundle);
+		startActivity(view);
 	}
+
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
+			long arg3) {
+		// TODO Auto-generated method stub
+
+		SMSData sms = (SMSData) getListAdapter().getItem(arg2);
+		msg = sms.getBody();
+		num = sms.getNumber();
+		nameToBeStored = sms.getName();
+		dateToBeStored = sms.getDate();
+		idToBeStored = sms.getId();
+		statusToBeStored = sms.getStatus();
+
+		return false;
+	}
+
 }

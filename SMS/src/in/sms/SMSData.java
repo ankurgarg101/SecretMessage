@@ -17,7 +17,8 @@ public class SMSData {
 	private long longDate;
 	private int type;
 	long id;
-	private String status, personId;
+	private String status;
+	int personId;
 
 	public void setId(long l){
 		this.id = l;
@@ -42,11 +43,11 @@ public class SMSData {
 		this.body = body;
 	}
 
-	public void setPersonId(String person_id) {
+	public void setPersonId(int person_id) {
 		this.personId = person_id;
 	}
 
-	public String getPersonId() {
+	public int getPersonId() {
 		return personId;
 	}
 
@@ -67,7 +68,10 @@ public class SMSData {
 
 	}
 	
-	public String getDate(){
+	public long getDate(){
+		return longDate;
+	}
+	public String getStrDate(){
 		return strDate;
 	}
 	
