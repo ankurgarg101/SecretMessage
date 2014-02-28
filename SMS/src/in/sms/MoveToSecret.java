@@ -32,11 +32,11 @@ public class MoveToSecret extends ListActivity {
 			// c.getContentResolver().q
 			c.getContentResolver().delete(uri, "_id=?",
 					new String[] { id + "" });
-			Toast.makeText(c, "Moved To Secret Database", Toast.LENGTH_LONG)
+			Toast.makeText(c, "Moved To Secret Database", Toast.LENGTH_SHORT)
 					.show();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			Toast.makeText(c, "Move Unsuccessful", Toast.LENGTH_LONG).show();
+			Toast.makeText(c, "Move Unsuccessful", Toast.LENGTH_SHORT).show();
 		}
 	}
 

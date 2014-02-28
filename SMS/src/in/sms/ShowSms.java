@@ -1,9 +1,7 @@
 package in.sms;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -11,10 +9,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
-public class ShowSms extends Activity implements OnClickListener{
+public class ShowSms extends Activity implements OnClickListener {
 
 	Button bReply;
 	TextView smsView, senderName;
@@ -27,14 +23,13 @@ public class ShowSms extends Activity implements OnClickListener{
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.received);
-		
+
 		bReply = (Button) findViewById(R.id.bReply);
 		smsView = (TextView) findViewById(R.id.smsView);
 		senderName = (TextView) findViewById(R.id.senderName);
 		try {
 			ViewSms();
 		} catch (Exception e) {
-			smsView.setText(e.toString());
 			Log.e("Error", e.toString());
 		}
 		bReply.setOnClickListener(this);
@@ -45,12 +40,17 @@ public class ShowSms extends Activity implements OnClickListener{
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.bReply:
-
 			Intent sendIntent = new Intent(Intent.ACTION_VIEW);
-	        sendIntent.putExtra("sms_body", "");
-	        sendIntent.putExtra("address", number);
-	        sendIntent.setType("vnd.android-dir/mms-sms");
-	        startActivity(sendIntent);
+			if (bReply.getText().toString() == "Forward") {
+				sendIntent.putExtra("sms_body", smsView.getText().toString());
+
+			} else {
+				sendIntent.putExtra("sms_body", "");
+				sendIntent.putExtra("address", number);
+			}
+
+			sendIntent.setType("vnd.android-dir/mms-sms");
+			startActivity(sendIntent);
 
 			break;
 		}
@@ -61,13 +61,15 @@ public class ShowSms extends Activity implements OnClickListener{
 
 		Bundle getSms = getIntent().getExtras();
 		senderName.setText(getSms.getString("name"));
+
 		smsView.setText(getSms.getString("sms"));
 		number = getSms.getString("number");
+		if (getSms.getString("name").contentEquals(""))
+			senderName.setText(number);
 		String from = getSms.getString("from");
-		if(from.contentEquals("outbox"))
+		if (from.contentEquals("outbox"))
 			bReply.setText("Forward");
-		Toast.makeText(getApplicationContext(), getSms.getString("sms"),
-				Toast.LENGTH_LONG).show();
+
 	}
 
 }

@@ -31,11 +31,12 @@ public class ViewSecretListAdapter extends ArrayAdapter<SMSData> {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		View rowView = inflater.inflate(R.layout.secret, parent, false);
-		TextView senderNumber = (TextView) rowView.findViewById(R.id.tvNumber);
+//		TextView senderNumber = (TextView) rowView.findViewById(R.id.tvNumber);
 		TextView Msg = (TextView) rowView.findViewById(R.id.tvMsg);
-		senderNumber.setText(smsList.get(position).getNumber());
+		//senderNumber.setText(smsList.get(position).getNumber());
 		Msg.setText(smsList.get(position).getName());
-		
+		if(smsList.get(position).getName().contentEquals(""))
+			Msg.setText(smsList.get(position).getNumber());
 		return rowView;
 	}
 

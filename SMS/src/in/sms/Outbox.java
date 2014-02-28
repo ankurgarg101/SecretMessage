@@ -26,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class Outbox extends ListActivity implements OnItemClickListener,
 		OnItemLongClickListener {
@@ -45,6 +46,7 @@ public class Outbox extends ListActivity implements OnItemClickListener,
 	long idToBeStored;
 	String statusToBeStored;
 	ListView lv;
+	int noOfMsgs;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,14 +57,15 @@ public class Outbox extends ListActivity implements OnItemClickListener,
 		lv.setOnItemClickListener(this);
 		registerForContextMenu(lv);
 		lv.setOnCreateContextMenuListener(this);
+		noOfMsgs = 0;
 
 		try {
 
 			List<SMSData> smsList = new ArrayList<SMSData>();
 
 			Uri uriOutbox = Uri.parse("content://sms/sent/");
-			Cursor cur = getContentResolver().query(uriOutbox, null, null, null,
-					null);
+			Cursor cur = getContentResolver().query(uriOutbox, null, null,
+					null, null);
 			// startManagingCursor(c);
 
 			// Read the sms data and store it in the list
@@ -80,11 +83,14 @@ public class Outbox extends ListActivity implements OnItemClickListener,
 					name = GetContactName(this,
 							cur.getString(cur.getColumnIndexOrThrow("address"))
 									.toString());
-					status = cur.getString(cur.getColumnIndexOrThrow("delivered")); //change the image to an error if it is not delivered
+					status = cur.getString(cur
+							.getColumnIndexOrThrow("delivered")); // change the
+																	// image to
+																	// an error
+																	// if it is
+																	// not
+																	// delivered
 					personId = cur.getInt(cur.getColumnIndexOrThrow("person"));
-
-					d += id + " : " + name + " : " + status +"\n";
-					Log.e("status",d);
 
 					// putting all the data in smsData class object and the
 					// pushing this object in the array
@@ -98,13 +104,20 @@ public class Outbox extends ListActivity implements OnItemClickListener,
 					sms.setStatus(status);
 					smsList.add(sms);
 					cur.moveToNext();
+					noOfMsgs++;
 				}
+				noOfMsgs--;
 			}
 			cur.close();
 
+			if (noOfMsgs == 0)
+				Toast.makeText(this, "No Messages in the Outbox",
+						Toast.LENGTH_SHORT).show();
 			// Set smsList in the ListAdapter using the array of smsData as a
 			// resource
 			setListAdapter(new OutboxListAdapter(this, smsList));
+
+			
 
 		} catch (Exception e) {
 			Log.e("Outbox Read Error", e.toString());
@@ -135,14 +148,14 @@ public class Outbox extends ListActivity implements OnItemClickListener,
 
 		if (menuItemIndex == 0) {
 			Delete del = new Delete(this, idToBeStored);
-			Intent refresh = new Intent(this,Outbox.class);
+			Intent refresh = new Intent(this, Outbox.class);
 			startActivity(refresh);
-			
+
 		} else if (menuItemIndex == 1) {
 			MoveToSecret mTs = new MoveToSecret();
 			mTs.moveToSecretDb(this, nameToBeStored, num, msg, idToBeStored,
 					dateToBeStored);
-			Intent refresh = new Intent(this,Outbox.class);
+			Intent refresh = new Intent(this, Outbox.class);
 			startActivity(refresh);
 		} else {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -155,8 +168,8 @@ public class Outbox extends ListActivity implements OnItemClickListener,
 			String strDate = dateFormat.format(dateToBeStored);
 			if (nameToBeStored.contentEquals(""))
 				d = num;
-			String information = "Type : Text Message \n" + "To : " + d
-					+ "\n" + "Delivered : " + strDate;
+			String information = "Type : Text Message \n" + "To : " + d + "\n"
+					+ "Delivered : " + strDate;
 
 			builder.setMessage(information);
 			builder.setNegativeButton("OK", new OnClickListener() {

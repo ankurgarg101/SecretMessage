@@ -1,12 +1,12 @@
 package in.sms;
 
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -60,9 +60,15 @@ public class Inbox extends ListActivity implements OnItemClickListener,
 
 			List<SMSData> smsList = new ArrayList<SMSData>();
 
+			
 			Uri uriInbox = Uri.parse("content://sms/inbox/");
-			Cursor cur = getContentResolver().query(uriInbox, null, null, null,
+			ContentResolver cr = getContentResolver();
+			Cursor cur = cr.query(uriInbox, null, null, null,
 					null);
+			for(int i=0;i<cur.getColumnCount();i++)
+				{
+					Log.i("fields", cur.getColumnName(i).toString());
+				}
 			// startManagingCursor(c);
 
 			// Read the sms data and store it in the list
@@ -135,6 +141,7 @@ public class Inbox extends ListActivity implements OnItemClickListener,
 		if (menuItemIndex == 0) {
 			Delete del = new Delete(this, idToBeStored);
 			Intent refresh = new Intent(this,Inbox.class);
+			finish();
 			startActivity(refresh);
 			
 		} else if (menuItemIndex == 1) {
@@ -142,6 +149,7 @@ public class Inbox extends ListActivity implements OnItemClickListener,
 			mTs.moveToSecretDb(this, nameToBeStored, num, msg, idToBeStored,
 					dateToBeStored);
 			Intent refresh = new Intent(this,Inbox.class);
+			finish();
 			startActivity(refresh);
 		} else {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -201,7 +209,7 @@ public class Inbox extends ListActivity implements OnItemClickListener,
 		SMSData sms = (SMSData) getListAdapter().getItem(arg2);
 		String msg = sms.getBody();
 
-		Log.e("click", "short");
+		
 		if (sms.getStatus().contentEquals("0")) {
 			// update the Status of the message in the data base
 
