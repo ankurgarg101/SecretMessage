@@ -1,6 +1,7 @@
 package in.sms;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -9,6 +10,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -22,8 +25,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ViewSecret extends ListActivity implements
-		OnItemLongClickListener, OnItemClickListener {
+public class ViewSecret extends ListActivity implements OnItemClickListener {
 
 	Context context;
 	String msg;
@@ -32,140 +34,127 @@ public class ViewSecret extends ListActivity implements
 	long dateToBeStored;
 	long idToBeStored;
 	String statusToBeStored;
+	boolean isSecret;
+	long timeFromConv;
 	ListView lv;
+	int threadStore;
+	long contactIdStore;
+	String nameOrNumberStore, numStore;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		context = getApplicationContext();
-		List<SMSData> smsList = new ArrayList<SMSData>();
+		// List<SMSData> smsList = new ArrayList<SMSData>();
+		List<ConversationClass> convList = new ArrayList<ConversationClass>();
 
-		SecretDb info = new SecretDb(this);
-		info.write();
+		// SecretDb info = new SecretDb(this);
+		// info.write();
+		String recentMsg = "";
 
-		long move_through_db = info.getSize();
+		RecentDB recent = new RecentDB(this);
+		recent.write();
+
+		long move_through_db = recent.getSize();
+		System.out.println(move_through_db);
 		if (move_through_db == 0)
 			Toast.makeText(this, "No Secret Messages", Toast.LENGTH_SHORT)
 					.show();
 
 		while ((move_through_db) > 0) {
+			
+			if (recent.getBody(move_through_db) == null || recent.getName(move_through_db) == null
+					|| recent.getPhoneNumber(move_through_db) == null){
+				move_through_db --;
+				continue;
+			}
+			
+			int thread = recent.getThreadId(move_through_db);
+			String msg = recent.getBody(move_through_db);
+			long timeDb = recent.getDate(move_through_db);
+			String name = recent.getName(move_through_db);
+			long contactId = recent.getContactId(move_through_db);
+			String cNumber = recent.getPhoneNumber(move_through_db);
+			int isDr = recent.getDraftStatus(cNumber);
+			
+			
+			String recentConv = getRecentMsgFromConv(thread);
+			if(isDr == 0){
+				if (recentConv != null) {
+					if (timeFromConv > timeDb) {
+						msg = recentConv;
+						timeDb = timeFromConv;
+					}
 
-			if (info.getBody(1) == null || info.getName(1) == null
-					|| info.getPhoneNumber(1) == null)
-				break;
-			SMSData secret = new SMSData();
-			secret.setBody(info.getBody(move_through_db));
-			// Log.e("msg",info.getId(move_through_db) + "");
-			secret.setName(info.getName(move_through_db));
-			secret.setNumber(info.getPhoneNumber(move_through_db));
-			secret.setId(info.getId(move_through_db));
-			smsList.add(secret);
+				}
+			}
+			
 
-			// System.out.println(info.getBody(move_through_db));
+			System.out.println(msg + " : " + timeDb);
+
+			ConversationClass convClass = new ConversationClass();
+			convClass.setSnippet(msg);
+			convClass.setName(name);
+			convClass.setNumber(cNumber);
+			convClass.setContactId(contactId);
+			convClass.setThread(thread);
+			convClass.setDate(timeDb);
+			convList.add(convClass);
 			move_through_db--;
 		}
+		recent.close();
 
-		info.close();
+		Collections.sort(convList, new ConversationClass());
 		// Set smsList in the ListAdapter
-		setListAdapter(new ViewSecretListAdapter(this, smsList));
+		setListAdapter(new ConversationAdapter(this, convList));
 		lv = getListView();
-		lv.setOnItemLongClickListener(this);
 		lv.setOnItemClickListener(this);
-		registerForContextMenu(lv);
-		lv.setOnCreateContextMenuListener(this);
+	}
+
+	private String getRecentMsgFromConv(int thread) {
+		// TODO Auto-generated method stub
+
+		Uri allUri = Uri.parse("content://sms/");
+		Cursor allCur = null;
+
+		allCur = getContentResolver().query(allUri, null, "thread_id=?",
+				new String[] { thread + "" }, null);
+		if (allCur.moveToFirst()) {
+
+			timeFromConv = allCur.getLong(allCur.getColumnIndexOrThrow("date"));
+			String snippet = allCur.getString(allCur
+					.getColumnIndexOrThrow("body"));
+			allCur.close();
+			System.out.println(snippet);
+			return snippet;
+		}
+		allCur.close();
+		return null;
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int position,
 			long arg3) {
 		// TODO Auto-generated method stub
-		SMSData sms = (SMSData) getListAdapter().getItem(position);
-		String msg = sms.getBody();
+		ConversationClass data = (ConversationClass) getListAdapter().getItem(
+				position);
+		threadStore = data.getThread();
 
-		// Log.e("click", "short");
-		Bundle showBundle = new Bundle();
-		showBundle.putString("sms", msg);
-		showBundle.putString("name", sms.getName());
-		showBundle.putString("number", sms.getNumber());
-		showBundle.putString("from", "inbox");
+		contactIdStore = data.getContactId();
+		nameOrNumberStore = data.getName();
+		numStore = data.getNumber();
+		Log.i("store num", numStore);
+		if (nameOrNumberStore.contentEquals(""))
+			nameOrNumberStore = data.getNumber();
 
-		Intent view = new Intent(this, ShowSms.class);
-		view.putExtras(showBundle);
-		startActivity(view);
-	}
+		Intent openConversation = new Intent(this, SecretThreads.class);
+		openConversation.putExtra("thread", threadStore);
+		openConversation.putExtra("id", contactIdStore);
+		openConversation.putExtra("contact", nameOrNumberStore);
+		openConversation.putExtra("number", numStore);
+		startActivity(openConversation);
 
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-		menu.setHeaderTitle("options");
-		String[] menuItems = { "Delete", "Info" };
-		for (int i = 0; i < menuItems.length; i++) {
-			menu.add(Menu.NONE, i, i, menuItems[i]);
-		}
-
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
-				.getMenuInfo();
-		int menuItemIndex = item.getItemId();
-		String[] menuItems = { "Delete", "Info" };
-		String menuItemName = menuItems[menuItemIndex];
-
-		if (menuItemIndex == 0) {
-			SecretDb del = new SecretDb(context);
-			del.write();
-			del.remove(idToBeStored);
-			del.close();
-			Intent refresh = new Intent(this, ViewSecret.class);
-			finish();
-			startActivity(refresh);
-			
-
-		} else {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Message Information");
-
-			String d = nameToBeStored;
-
-			if (nameToBeStored.contentEquals(""))
-				d = num;
-			String information = "Type : Text Message \n" + "From : " + d;
-
-			builder.setMessage(information);
-			builder.setNegativeButton("OK", new OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
-					dialog.cancel();
-				}
-			});
-
-			AlertDialog viewInfo = builder.create();
-			viewInfo.show();
-		}
-
-		return true;
-	}
-
-	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
-			long arg3) {
-		// TODO Auto-generated method stub
-
-		SMSData sms = (SMSData) getListAdapter().getItem(arg2);
-		msg = sms.getBody();
-		num = sms.getNumber();
-		nameToBeStored = sms.getName();
-		dateToBeStored = sms.getDate();
-		idToBeStored = sms.getId();
-		
-		return false;
 	}
 
 }

@@ -19,11 +19,11 @@ public class MoveToSecret extends ListActivity {
 	String number = null;
 
 	public void moveToSecretDb(Context c, String name, String number,
-			String body, long id, long date) {
+			String body, long id, long date, long contactId, int threadId) {
 
 		SecretDb db = new SecretDb(c);
 		db.write();
-		db.putEntry(name, number, body, id, date);
+		db.putEntry(name, number, body, id, date, contactId, threadId);
 		db.close();
 		Uri uri = Uri.parse("content://sms/");
 		System.out.println(uri);

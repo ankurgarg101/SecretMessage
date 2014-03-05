@@ -2,6 +2,7 @@ package in.sms;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 
 /**
  * This class represents SMS.
@@ -9,17 +10,44 @@ import java.text.SimpleDateFormat;
  * @author itcuties
  * 
  */
-public class SMSData {
+public class SMSData implements Comparator<SMSData>,
+Comparable<SMSData>{
 
 	// Number from witch the sms was send
-	private String number, body, strDate, name;
+	private String  body, strDate, contact, number;
 	// SMS text body
 	private long longDate;
-	private int type;
+	private int type, thread;
 	long id;
-	private String status;
-	int personId;
+	long contactId;
+	boolean secret;
 
+	@Override
+	public int compare(SMSData lhs, SMSData rhs) {
+		// TODO Auto-generated method stub
+
+		long lTime = (lhs).getDate();
+		long rTime = (rhs).getDate();
+
+		if ((lTime - rTime) <= 0)
+			return -1;
+		else
+			return 1;
+
+	}
+
+	@Override
+	public int compareTo(SMSData another) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public void setSecret(boolean s){
+		secret = s;
+	}
+	public boolean getSecret(){
+		return secret;
+	}
 	public void setId(long l){
 		this.id = l;
 	}
@@ -27,14 +55,7 @@ public class SMSData {
 	public long getId(){
 		return id;
 	}
-	public String getNumber() {
-		return number;
-	}
-
-	public void setNumber(String number) {
-		this.number = number;
-	}
-
+	
 	public String getBody() {
 		return body;
 	}
@@ -43,12 +64,12 @@ public class SMSData {
 		this.body = body;
 	}
 
-	public void setPersonId(int person_id) {
-		this.personId = person_id;
+	public void setContactId(long contact_id) {
+		this.contactId = contact_id;
 	}
 
-	public int getPersonId() {
-		return personId;
+	public long getContactId() {
+		return contactId;
 	}
 
 	public int getType() {
@@ -76,17 +97,25 @@ public class SMSData {
 	}
 	
 	public void setName(String n){
-		name = n;
+		contact = n;
 	}
 	
 	public String getName(){
-		return name;
+		return contact;
+	}
+	public void setNumber(String n){
+		number = n;
 	}
 	
-	public void setStatus(String s){
-		status = s;
+	public String getNumber(){
+		return number;
 	}
-	public String getStatus(){
-		return status;
+	
+	public void setThread(int th){
+		thread = th;
+	}
+	
+	public int getThread(){
+		return thread;
 	}
 }

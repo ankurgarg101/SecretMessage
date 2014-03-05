@@ -1,7 +1,7 @@
 package in.sms;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.app.ListActivity;
@@ -14,7 +14,11 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.PhoneLookup;
+import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,13 +26,19 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
-public class Conversation extends ListActivity implements OnItemLongClickListener, OnItemClickListener {
+public class Conversation extends ListActivity implements
+		OnItemLongClickListener, OnItemClickListener {
 
 	Context context;
 	ListView lv;
 	SharedPreferences prefs;
 	SharedPreferences.Editor editor;
+	int convCount;
+	int threadStore;
+	long contactIdStore;
+	String numStore, nameOrNumberStore;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +51,10 @@ public class Conversation extends ListActivity implements OnItemLongClickListene
 		lv = getListView();
 		lv.setOnItemLongClickListener(this);
 		lv.setOnItemClickListener(this);
+		registerForContextMenu(lv);
+		lv.setOnCreateContextMenuListener(this);
+		convCount = 0;
+		
 
 		try {
 			List<ConversationClass> smsList = new ArrayList<ConversationClass>();
@@ -49,62 +63,23 @@ public class Conversation extends ListActivity implements OnItemLongClickListene
 			Cursor convCur = getContentResolver().query(convUri, null, null,
 					null, null);
 			Uri allUri = Uri.parse("content://sms/");
-			Cursor allCur;
-			
-			if (convCur.moveToFirst()) {
-				
-				
-				String snippet = convCur.getString(convCur
-						.getColumnIndexOrThrow("snippet"));
-				String num = "", name = "";
-				long contactId = 0, time = 0;
-				
-				int thread = convCur.getInt(convCur
-						.getColumnIndexOrThrow("thread_id"));
-				allCur = getContentResolver().query(allUri, null,
-						"thread_id=?", new String[] { thread + "" }, null);
-				if (allCur.moveToFirst()) {
-					num = allCur.getString(allCur
-							.getColumnIndexOrThrow("address"));
-					time = allCur.getLong(allCur
-							.getColumnIndexOrThrow("date"));
-					SimpleDateFormat dateFormat = new SimpleDateFormat(
-							"yyyy-MM-dd hh:mm:ss");
-					
-					String strDate = dateFormat.format(time);
-					contactId = Long.valueOf(
-							fetchContactIdFromPhoneNumber(num)).longValue();
-					System.out.println(contactId);
-					
-					name = GetContactName(context, num);
-					if (name == null)
-						name = "";
-					
-					
-					Log.i("msg", snippet + " : " + strDate);
+			Cursor allCur = null;
 
-				}
-				ConversationClass convClass = new ConversationClass();
-				convClass.setSnippet(snippet);
-				convClass.setName(name);
-				convClass.setNumber(num);
-				convClass.setUri(contactId);
-				convClass.setThread(thread);
-				convClass.setDate(time);
-				smsList.add(convClass);
-				
-				
-				
+			if (convCur.moveToFirst()) {
+
+				convCur.moveToPrevious();
+
 				while (convCur.moveToNext()) {
-					
-					snippet = convCur.getString(convCur
+
+					convCount++;
+					String snippet = convCur.getString(convCur
 							.getColumnIndexOrThrow("snippet"));
-					num = "";
-					name = "";
-					contactId = 0;
-					time = 0;
-					
-					thread = convCur.getInt(convCur
+					String num = "";
+					String name = "";
+					long contactId = 0;
+					long time = 0;
+
+					int thread = convCur.getInt(convCur
 							.getColumnIndexOrThrow("thread_id"));
 					allCur = getContentResolver().query(allUri, null,
 							"thread_id=?", new String[] { thread + "" }, null);
@@ -113,39 +88,43 @@ public class Conversation extends ListActivity implements OnItemLongClickListene
 								.getColumnIndexOrThrow("address"));
 						time = allCur.getLong(allCur
 								.getColumnIndexOrThrow("date"));
-						SimpleDateFormat dateFormat = new SimpleDateFormat(
-								"yyyy-MM-dd hh:mm:ss");
-						
-						String strDate = dateFormat.format(time);
+//						SimpleDateFormat dateFormat = new SimpleDateFormat(
+//								"yyyy-MM-dd hh:mm:ss");
+//
+//						String strDate = dateFormat.format(time);
 						contactId = Long.valueOf(
 								fetchContactIdFromPhoneNumber(num)).longValue();
-						System.out.println(contactId);
 						
 						name = GetContactName(context, num);
 						if (name == null)
 							name = "";
-						
-						
-						Log.i("msg", snippet + " : " + strDate);
 
 					}
-					convClass = new ConversationClass();
+
+					ConversationClass convClass = new ConversationClass();
 					convClass.setSnippet(snippet);
 					convClass.setName(name);
 					convClass.setNumber(num);
-					convClass.setUri(contactId);
+					convClass.setContactId(contactId);
 					convClass.setThread(thread);
 					convClass.setDate(time);
 					smsList.add(convClass);
-				
-				}
 
+				}
+				convCount--;
 				convCur.close();
+				allCur.close();
 			}
 			// for(int i=0;i<c.getColumnCount();i++)
 			// {
 			// Log.i("fields", c.getColumnName(i).toString());
 			// }
+
+			if (convCount == 0)
+				Toast.makeText(this, "No Conversations", Toast.LENGTH_SHORT)
+						.show();
+
+			Collections.sort(smsList, new ConversationClass());
 
 			setListAdapter(new ConversationAdapter(this, smsList));
 		} catch (Exception e) {
@@ -197,16 +176,81 @@ public class Conversation extends ListActivity implements OnItemLongClickListene
 	@Override
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		// TODO Auto-generated method stub
-		
+
+		ConversationClass data = (ConversationClass) getListAdapter().getItem(
+				arg2);
+		int thread = data.getThread();
+		long contactId = data.getContactId();
+		String nameOrnumber = data.getName();
+		String num = data.getNumber();
+		if (nameOrnumber.contentEquals(""))
+			nameOrnumber = data.getNumber();
+
+		Intent openConversation = new Intent(Intent.ACTION_VIEW);
+		openConversation.setType("vnd.android-dir/mms-sms");
+		openConversation.putExtra("address", num);
+		startActivity(openConversation);
 	}
 
 	@Override
 	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
 			long arg3) {
 		// TODO Auto-generated method stub
+		
+		ConversationClass data = (ConversationClass) getListAdapter().getItem(arg2);
+		threadStore = data.getThread();
+		
+		contactIdStore = data.getContactId();
+		nameOrNumberStore = data.getName();
+		numStore = data.getNumber();
+		if (nameOrNumberStore.contentEquals(""))
+			nameOrNumberStore = data.getNumber();
+
+		
 		return false;
 	}
 
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+		menu.setHeaderTitle("Options");
+		String[] menuItems = { "Delete Thread", "Move To Secret"};//, "Move Thread to Secret"};
+		for (int i = 0; i < menuItems.length; i++) {
+			menu.add(Menu.NONE, i, i, menuItems[i]);
+		}
+
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item
+				.getMenuInfo();
+		int menuItemIndex = item.getItemId();
+		String[] menuItems = { "Delete", "Move To Secret"};//, "Move to Secret"};
+		String menuItemName = menuItems[menuItemIndex];
+
+		if (menuItemIndex == 0) {
+			Delete del = new Delete(this);
+			del.deleteThread(threadStore, "1111");
+			Intent refresh = new Intent(this, Conversation.class);
+			finish();
+			startActivity(refresh);
+		}
+		else if (menuItemIndex == 1) {
+			Intent openConversation = new Intent(this, ThreadView.class);
+			openConversation.putExtra("thread", threadStore);
+			openConversation.putExtra("id", contactIdStore);
+			openConversation.putExtra("contact", nameOrNumberStore);
+			openConversation.putExtra("number", numStore);
+			startActivity(openConversation);
+		}
+
+		return true;
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(android.view.Menu menu) {
 		// TODO Auto-generated method stub

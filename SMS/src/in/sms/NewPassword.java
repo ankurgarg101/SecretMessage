@@ -87,8 +87,15 @@ public class NewPassword extends Activity implements OnClickListener {
 						editor.commit();
 						counter = 2;
 						editor.putString("pass", password);
+						
 						editor.commit();
-						Intent home = new Intent(this, Conversation.class);
+						int ask = prefs.getInt("ask", 0);
+						Intent home;
+						if (ask == 0)
+							home = new Intent(this, Question.class);
+						else
+							home = new Intent(this, Conversation.class);
+						finish();
 						startActivity(home);
 					} else {
 						stateZero();

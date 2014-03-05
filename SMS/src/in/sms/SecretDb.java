@@ -7,7 +7,6 @@ import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
 
 public class SecretDb {
 
@@ -17,7 +16,9 @@ public class SecretDb {
 	public static final String MESSAGE = "body";
 	public static final String DATE = "date";
 	public static final String ID = "id";
-	//public static final String 
+	public static final String CONTACT_ID = "contact_id";
+	public static final String THREAD_ID = "thread_id";
+	// public static final String
 
 	private static final String DB_NAME = "SecretDb";
 	private static final String TABLE_NAME = "Msg";
@@ -26,7 +27,7 @@ public class SecretDb {
 	private DbHelper ourHelper;
 	private final Context context;
 	private SQLiteDatabase ourDb;
-	
+
 	private static class DbHelper extends SQLiteOpenHelper {
 
 		public DbHelper(Context context) {
@@ -40,7 +41,10 @@ public class SecretDb {
 
 			db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + ROW
 					+ " INTEGER PRIMARY KEY AUTOINCREMENT, " + NAME
-					+ " TEXT NOT NULL, " + NUMBER + " TEXT NOT NULL, " + DATE + " INTEGER NOT NULL, " + ID + " INTEGER NOT NULL, " + MESSAGE + " TEXT NOT NULL);");
+					+ " TEXT NOT NULL, " + NUMBER + " TEXT NOT NULL, "
+					+ CONTACT_ID + " INTEGER NOT NULL, " + THREAD_ID
+					+ " INTEGER NOT NULL, " + DATE + " INTEGER NOT NULL, " + ID
+					+ " INTEGER NOT NULL, " + MESSAGE + " TEXT NOT NULL);");
 
 		}
 
@@ -62,8 +66,8 @@ public class SecretDb {
 
 		ourHelper = new DbHelper(context);
 		ourDb = ourHelper.getWritableDatabase();
-		
-		//Toast.makeText(context,"Done", Toast.LENGTH_LONG).show();
+
+		// Toast.makeText(context,"Done", Toast.LENGTH_LONG).show();
 		return this;
 	}
 
@@ -71,35 +75,57 @@ public class SecretDb {
 		ourHelper.close();
 	}
 
-	public long putEntry(String dbName, String dbNumber, String dbBody, long id, long date) {
+	public long putEntry(String dbName, String dbNumber, String dbBody,
+			long id, long date, long contactId, int thread_id) {
 		// TODO Auto-generated method stub
 
 		ContentValues cv = new ContentValues();
-		//Toast.makeText(context,"Done", Toast.LENGTH_LONG).show();
+		// Toast.makeText(context,"Done", Toast.LENGTH_LONG).show();
+		RecentDB rDb = new RecentDB(context);
+		rDb.write();
+		if (rDb.findNumber(dbNumber)) {
+			long rDate = rDb.getDate(dbNumber);
+			int isDraft = rDb.getDraftStatus(dbNumber);
+			if (rDate == -1) {
+				rDb.putEntry(dbName, dbNumber, dbBody, id, date, contactId,
+						thread_id, 0);
+			} else if (rDate < date && isDraft == 0) {
+				rDb.remove(thread_id, dbNumber);
+				rDb.putEntry(dbName, dbNumber, dbBody, id, date, contactId,
+						thread_id, 0);
+			}
+
+		} else
+			rDb.putEntry(dbName, dbNumber, dbBody, id, date, contactId,
+					thread_id, 0);
 		cv.put(NAME, dbName);
 		cv.put(NUMBER, dbNumber);
 		cv.put(MESSAGE, dbBody);
 		cv.put(ID, id);
 		cv.put(DATE, date);
+		cv.put(CONTACT_ID, contactId);
+		cv.put(THREAD_ID, thread_id);
 		return ourDb.insert(TABLE_NAME, null, cv);
 	}
 
-	public long getSize()
-	{
-		long numRows = DatabaseUtils.longForQuery(ourDb, "SELECT COUNT(*) FROM " + TABLE_NAME, null);
+	public long getSize() {
+		long numRows = DatabaseUtils.longForQuery(ourDb,
+				"SELECT COUNT(*) FROM " + TABLE_NAME, null);
+
 		return numRows;
 	}
-	
+
 	public String getName(long l) {
 		// TODO Auto-generated method stub
-		//String[] columns = new String[] { ROW, NAME, NUMBER };
+		// String[] columns = new String[] { ROW, NAME, NUMBER };
 		Cursor c = ourDb.query(TABLE_NAME, null, ROW + "=" + l, null, null,
 				null, null);
 		String resName = null;
 		if (c != null) {
 			c.moveToFirst();
-			resName = c.getString(1);
+			resName = c.getString(c.getColumnIndexOrThrow(NAME));
 		}
+		c.close();
 		return resName;
 	}
 
@@ -110,23 +136,64 @@ public class SecretDb {
 		String resNumber = null;
 		if (c != null) {
 			c.moveToFirst();
-			resNumber = c.getString(2);
+			resNumber = c.getString(c.getColumnIndexOrThrow(NUMBER));
 		}
+		c.close();
 		return resNumber;
 	}
-	
+
+	public long getDate(long l) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, ROW + "=" + l, null, null,
+				null, null);
+		long resNumber = -1;
+		if (c != null) {
+			c.moveToFirst();
+			resNumber = c.getLong(c.getColumnIndexOrThrow(DATE));
+		}
+		c.close();
+		return resNumber;
+	}
+
+	public long getDate(String number) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + number + "'",
+				null, null, null, null);
+		long resNumber = -1;
+		if (c != null) {
+			c.moveToFirst();
+			resNumber = c.getLong(c.getColumnIndexOrThrow(DATE));
+		}
+		c.close();
+		return resNumber;
+	}
+
 	public String getBody(long l) {
 		// TODO Auto-generated method stub
 		Cursor c = ourDb.query(TABLE_NAME, null, ROW + "=" + l, null, null,
 				null, null);
 		String resNumber = null;
 		if (c != null) {
-			c.moveToFirst();
-			resNumber = c.getString(c.getColumnIndex(MESSAGE));
+			if (c.moveToFirst())
+				resNumber = c.getString(c.getColumnIndexOrThrow(MESSAGE));
 		}
+		c.close();
 		return resNumber;
 	}
-	
+
+	public String getBody(String num) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + num + "'",
+				null, null, null, null);
+		String resNumber = null;
+		if (c != null) {
+			if (c.moveToFirst())
+				resNumber = c.getString(c.getColumnIndexOrThrow(MESSAGE));
+		}
+		c.close();
+		return resNumber;
+	}
+
 	public long getId(long l) {
 		// TODO Auto-generated method stub
 		Cursor c = ourDb.query(TABLE_NAME, null, ROW + "=" + l, null, null,
@@ -134,27 +201,106 @@ public class SecretDb {
 		long resNumber = -1;
 		if (c != null) {
 			c.moveToFirst();
-			resNumber = c.getLong(c.getColumnIndex(ID));
+			resNumber = c.getLong(c.getColumnIndexOrThrow(ID));
 		}
+		c.close();
 		return resNumber;
 	}
 	
-	public boolean findById(long id){
+	public long getId(String n) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + n +"'", null, null,
+				null, null);
+		long resNumber = -1;
+		if (c != null) {
+			if(c.moveToFirst())
+			resNumber = c.getLong(c.getColumnIndexOrThrow(ID));
+		}
+		c.close();
+		return resNumber;
+	}
+
+	public boolean findById(long id) {
 		Cursor c = ourDb.query(TABLE_NAME, null, ID + "=" + id, null, null,
 				null, null);
-		if(c == null)
+		if (c == null)
 			return false;
+		c.close();
 		return true;
 	}
-	
+
+	public boolean findNumber(String number) {
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + number + "'",
+				null, null, null, null);
+		if (c == null)
+			return false;
+		c.close();
+		return true;
+	}
+
+	public long getContactId(String number) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + number + "'",
+				null, null, null, null);
+		long resNumber = -1;
+		if (c != null) {
+			if (c.moveToFirst()) {
+				resNumber = c.getLong(c.getColumnIndexOrThrow(CONTACT_ID));
+			}
+		}
+		c.close();
+		return resNumber;
+	}
+
+	public long getContactId(long id) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, ROW + "=" + id, null, null,
+				null, null);
+		long resNumber = -1;
+		if (c != null) {
+			if (c.moveToFirst()) {
+				resNumber = c.getLong(c.getColumnIndexOrThrow(CONTACT_ID));
+			}
+		}
+		c.close();
+		return resNumber;
+	}
+
+	public int getThreadId(long id) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, ROW + "=" + id, null, null,
+				null, null);
+		int resNumber = -1;
+		if (c != null) {
+			if (c.moveToFirst()) {
+				resNumber = c.getInt(c.getColumnIndexOrThrow(THREAD_ID));
+			}
+			c.close();
+		}
+		return resNumber;
+	}
+
+	public int getThreadId(String number) {
+		// TODO Auto-generated method stub
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + number + "'",
+				null, null, null, null);
+		int resNumber = -1;
+		if (c != null) {
+			if (c.moveToFirst()) {
+				resNumber = c.getInt(c.getColumnIndexOrThrow(THREAD_ID));
+			}
+		}
+		c.close();
+		return resNumber;
+	}
 
 	public void modify(long lR, String mName, String mNumber) {
 		// TODO Auto-generated method stub
-		
+
 		ContentValues cvUpadte = new ContentValues();
-		cvUpadte.put(NAME,mName);
+		cvUpadte.put(NAME, mName);
 		cvUpadte.put(NUMBER, mNumber);
-		ourDb.update(TABLE_NAME, cvUpadte, ROW + "=" + lR  , null);
+		ourDb.update(TABLE_NAME, cvUpadte, ROW + "=" + lR, null);
 	}
 
 	public void remove(long id) {
@@ -162,5 +308,25 @@ public class SecretDb {
 		ourDb.delete(TABLE_NAME, ID + "=" + id, null);
 	}
 
-	
+	public void remove(long thread, String number) {
+		// TODO Auto-generated method stub
+		ourDb.delete(TABLE_NAME, THREAD_ID + "=" + thread, null);
+	}
+
+	public String getName(String number) {
+		// TODO Auto-generated method stub
+		// String[] columns = new String[] { ROW, NAME, NUMBER };
+		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + number + "'",
+				null, null, null, null);
+		String resName = null;
+
+		if (c != null) {
+			if (c.moveToFirst()) {
+				resName = c.getString(c.getColumnIndexOrThrow(NAME));
+			}
+
+		}
+		c.close();
+		return resName;
+	}
 }

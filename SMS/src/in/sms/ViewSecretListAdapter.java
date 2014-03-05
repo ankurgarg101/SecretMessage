@@ -1,8 +1,17 @@
 package in.sms;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.ContactsContract.Contacts;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +22,8 @@ import android.widget.TextView;
 
 public class ViewSecretListAdapter extends ArrayAdapter<SMSData> {
 
-	//CheckBox cb;
+	ImageView iv;
+	long contactId;
 	// List context
 	private final Context context;
 	// List values
@@ -31,13 +41,39 @@ public class ViewSecretListAdapter extends ArrayAdapter<SMSData> {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		View rowView = inflater.inflate(R.layout.secret, parent, false);
-//		TextView senderNumber = (TextView) rowView.findViewById(R.id.tvNumber);
+		// TextView senderNumber = (TextView)
+		// rowView.findViewById(R.id.tvNumber);
 		TextView Msg = (TextView) rowView.findViewById(R.id.tvMsg);
-		//senderNumber.setText(smsList.get(position).getNumber());
+		ImageView iv = (ImageView) rowView.findViewById(R.id.iv);
+		// senderNumber.setText(smsList.get(position).getNumber());
 		Msg.setText(smsList.get(position).getName());
-		if(smsList.get(position).getName().contentEquals(""))
-			Msg.setText(smsList.get(position).getNumber());
+		contactId = smsList.get(position).getContactId();
+
+		if (contactId > 0) {
+			InputStream photo_stream = openDisplayPhoto(contactId);
+			if (photo_stream != null) {
+				BufferedInputStream buf = new BufferedInputStream(photo_stream);
+				Bitmap my_btmp = BitmapFactory.decodeStream(buf);
+
+				iv.setImageBitmap(my_btmp);
+			}
+
+		}
+
 		return rowView;
 	}
 
+	public InputStream openDisplayPhoto(long contactId) {
+		Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI,
+				contactId);
+		Uri displayPhotoUri = Uri.withAppendedPath(contactUri,
+				Contacts.Photo.DISPLAY_PHOTO);
+		try {
+			AssetFileDescriptor fd = context.getContentResolver()
+					.openAssetFileDescriptor(displayPhotoUri, "r");
+			return fd.createInputStream();
+		} catch (IOException e) {
+			return null;
+		}
+	}
 }

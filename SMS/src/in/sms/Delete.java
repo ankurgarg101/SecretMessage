@@ -14,18 +14,39 @@ import android.widget.Toast;
 
 public class Delete {
 
-	public Delete(Context c, long id) {
+	Context context;
+	public Delete(Context c) {
+		context = c;
+		
+	}
+	
+	public void deleteMsg(long id){
 		Uri uri = Uri.parse("content://sms/");
 		System.out.println(uri);
 		try {
 
 			// c.getContentResolver().q
-			c.getContentResolver().delete(uri, "_id=?",
+			context.getContentResolver().delete(uri, "_id=?",
 					new String[] { id + "" });
-			Toast.makeText(c, "Delete Successful", Toast.LENGTH_LONG).show();
+			Toast.makeText(context, "Delete Successful", Toast.LENGTH_LONG).show();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			Toast.makeText(c, "Delete Unsuccessful", Toast.LENGTH_LONG).show();
+			Toast.makeText(context, "Delete Unsuccessful", Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	public void deleteThread(long thread, String num){
+		Uri uri = Uri.parse("content://sms/");
+		System.out.println(uri);
+		try {
+
+			// c.getContentResolver().q
+			context.getContentResolver().delete(uri, "thread_id=?",
+					new String[] { thread + "" });
+			Toast.makeText(context, "Thread Deleted", Toast.LENGTH_LONG).show();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			Toast.makeText(context, "Delete Unsuccessful", Toast.LENGTH_LONG).show();
 		}
 	}
 }

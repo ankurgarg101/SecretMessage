@@ -26,17 +26,20 @@ public class Password extends Activity implements OnClickListener {
 	String confirmPassword;
 
 	int counter;
+	Button forget;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.newpass);
+		setContentView(R.layout.password);
 
-		et = (EditText) findViewById(R.id.et);
-		tv = (TextView) findViewById(R.id.tv);
-		btn = (Button) findViewById(R.id.btn);
+		et = (EditText) findViewById(R.id.et1);
+		tv = (TextView) findViewById(R.id.tv1);
+		btn = (Button) findViewById(R.id.btn1);
+		forget = (Button) findViewById(R.id.frgtBtn);
 		btn.setOnClickListener(this);
+		forget.setOnClickListener(this);
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		editor = prefs.edit();
 
@@ -46,7 +49,7 @@ public class Password extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		if (v.getId() == R.id.btn) {
+		if (v.getId() == R.id.btn1) {
 
 			password = et.getText().toString();
 			if (password.contentEquals("")) {
@@ -75,6 +78,10 @@ public class Password extends Activity implements OnClickListener {
 
 			}
 
+		}
+		else if(v.getId() == R.id.frgtBtn){
+			Intent i = new Intent(this, Question.class);
+			startActivity(i);
 		}
 	}
 

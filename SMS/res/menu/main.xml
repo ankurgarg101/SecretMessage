@@ -3,7 +3,7 @@
     <item
         android:id="@+id/write"
         android:checked="false"
-        android:icon="@drawable/write1"
+        android:icon="@drawable/ic_action_new"
         android:numericShortcut="1"
         android:showAsAction="always"/>
     <item
