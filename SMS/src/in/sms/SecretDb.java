@@ -85,19 +85,19 @@ public class SecretDb {
 		rDb.write();
 		if (rDb.findNumber(dbNumber)) {
 			long rDate = rDb.getDate(dbNumber);
-			int isDraft = rDb.getDraftStatus(dbNumber);
+			String dr = rDb.getDraft(dbNumber);
 			if (rDate == -1) {
 				rDb.putEntry(dbName, dbNumber, dbBody, id, date, contactId,
-						thread_id, 0);
-			} else if (rDate < date && isDraft == 0) {
+						thread_id, "");
+			} else if (rDate < date) {
 				rDb.remove(thread_id, dbNumber);
 				rDb.putEntry(dbName, dbNumber, dbBody, id, date, contactId,
-						thread_id, 0);
+						thread_id, dr);
 			}
 
 		} else
 			rDb.putEntry(dbName, dbNumber, dbBody, id, date, contactId,
-					thread_id, 0);
+					thread_id, "");
 		cv.put(NAME, dbName);
 		cv.put(NUMBER, dbNumber);
 		cv.put(MESSAGE, dbBody);

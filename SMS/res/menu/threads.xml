@@ -10,7 +10,7 @@
     <item
         android:id="@+id/reply"
         android:checked="false"
-        android:icon="@drawable/ic_action_chat"
+        android:icon="@drawable/ic_action_reply"
         android:numericShortcut="4"
         android:showAsAction="always"/>
 

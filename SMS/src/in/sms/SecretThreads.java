@@ -13,16 +13,21 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class SecretThreads extends Activity implements OnClickListener{
+public class SecretThreads extends Activity implements OnClickListener, OnItemLongClickListener{
 
-	Button send;
+	ImageButton send;
 	EditText write;
 	long date;
 	String status;
@@ -32,20 +37,25 @@ public class SecretThreads extends Activity implements OnClickListener{
 	long contactId;
 	String nameOrNumber, number, body;
 	ListView lv;
+	
+	
+	String nameToBeStored, numberToBeStored, msgStore; 
+	long dateToBeStored, idToBeStored,contactIdToBeStored;
+	int threadToBeStored;	
 
 	// only inbox and outbox should be here
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.secret_thread);
-		send = (Button) findViewById(R.id.send);
+		send = (ImageButton) findViewById(R.id.sendMsg);
 		write = (EditText) findViewById(R.id.write);
 		
 		thread = getIntent().getIntExtra("thread", -1);
 		contactId = getIntent().getLongExtra("id", 0);
 		nameOrNumber = getIntent().getStringExtra("contact");
 		number = getIntent().getStringExtra("number");
-
+		send.setOnClickListener(this);
 		
 		System.out.println(thread);
 
@@ -141,7 +151,6 @@ public class SecretThreads extends Activity implements OnClickListener{
 					sms.setSecret(true);
 					smsList.add(sms);
 				}
-				
 				length--;
 			}
 
@@ -151,6 +160,12 @@ public class SecretThreads extends Activity implements OnClickListener{
 		} catch (Exception e) {
 			Log.e("Inbox Read Error", e.toString());
 		}
+		
+		RecentDB r = new RecentDB(this);
+		r.write();
+		String dr = r.getDraft(number);
+		if(!dr.contentEquals(""))
+			write.setText(dr);
 		Collections.sort(smsList, new SMSData());
 		lv.setAdapter(new ThreadListAdapter(this, smsList));
 		lv.setSelection(lv.getAdapter().getCount() - 1);
@@ -166,31 +181,21 @@ public class SecretThreads extends Activity implements OnClickListener{
 		if(!dr.contentEquals("")){
 			System.out.println("dr : " + dr);
 			long dateS = System.currentTimeMillis();
-			r.remove(thread, number);
-			r.putEntry(nameOrNumber, number, dr, 23455, dateS, contactId, thread, 1);
+			r.modify(number, dr);
 		}else{
-			int isDr = r.getDraftStatus(number);
-			if(isDr == 1){
-				r.remove(thread,number);
-				SecretDb s = new SecretDb(this);
-				s.write();
-				String m = s.getBody(number);
-				String n = s.getName(number);
-				long id = s.getId(number);
-				long date = s.getDate(number);
-				long cId = s.getContactId(number);
-				r.putEntry(n, number, m, id, date, cId, thread, 0);
-				s.close();
-			}
+			r.modify(number, "");
+			
 		}
 		r.close();
-		
+		Intent i = new Intent(this, ViewSecret.class);
+		finish();
+		startActivity(i);
 	}
 
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		if(v.getId() == R.id.send){
+		if(v.getId() == R.id.sendMsg){
 			String msg = write.getText().toString();
 			String numberSend = number;
 			WriteFromSecret wr = new WriteFromSecret(this);
@@ -205,4 +210,58 @@ public class SecretThreads extends Activity implements OnClickListener{
 		}
 	}
 
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
+			long arg3) {
+		// TODO Auto-generated method stub
+		// check for msgs sent by me
+
+		SMSData sms = (SMSData) lv.getAdapter().getItem(arg2);
+		msgStore = sms.getBody();
+		nameToBeStored = sms.getName();
+		numberToBeStored = sms.getNumber();
+		dateToBeStored = sms.getDate();
+		idToBeStored = sms.getId();
+		contactIdToBeStored = sms.getContactId();
+		threadToBeStored = sms.getThread();
+		return false;
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(android.view.Menu menu) {
+		// TODO Auto-generated method stub
+		super.onCreateOptionsMenu(menu);
+		MenuInflater blowMenu = getMenuInflater();
+		blowMenu.inflate(R.menu.threads, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+		case R.id.reply:
+			try {
+				Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+				sendIntent.putExtra("sms_body", "");
+				sendIntent.setType("vnd.android-dir/mms-sms");
+				sendIntent.putExtra("address", number);
+				startActivity(sendIntent);
+			} catch (Exception e) {
+				Log.e("menu", e.toString());
+			}
+			break;
+		case R.id.call:
+			try {
+
+				Uri uri = Uri.parse("tel:" + number.trim());
+				Intent sendIntent = new Intent(Intent.ACTION_CALL, uri);
+				sendIntent.setData(uri);
+				startActivity(sendIntent);
+			} catch (Exception e) {
+				Log.e("menu", e.toString());
+			}
+		}
+		return false;
+	}
 }

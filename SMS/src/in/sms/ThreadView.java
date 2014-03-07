@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ContentResolver;
@@ -49,6 +50,7 @@ public class ThreadView extends ListActivity implements OnItemLongClickListener 
 	long contactId;
 	String nameOrNumber;
 	ListView lv;
+	ActionBar actionBar;
 // only inbox and outbox should be here
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,8 @@ public class ThreadView extends ListActivity implements OnItemLongClickListener 
 		contactId = getIntent().getLongExtra("id", 0);
 		nameOrNumber = getIntent().getStringExtra("contact");
 		number = getIntent().getStringExtra("number");
+		actionBar = getActionBar();
+		actionBar.setTitle(nameOrNumber);
 
 		System.out.println(thread);
 

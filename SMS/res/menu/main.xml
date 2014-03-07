@@ -9,7 +9,7 @@
     <item
         android:id="@+id/secretView"
         android:checked="false"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/mail_lock"
         android:numericShortcut="2"
         android:showAsAction="always"/>
     <item

@@ -1,10 +1,13 @@
 package in.sms;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -87,16 +90,20 @@ public class NewPassword extends Activity implements OnClickListener {
 						editor.commit();
 						counter = 2;
 						editor.putString("pass", password);
-						
+
 						editor.commit();
 						int ask = prefs.getInt("ask", 0);
-						Intent home;
-						if (ask == 0)
-							home = new Intent(this, Question.class);
-						else
+						if (ask == 0){
+							getQues();
+						}
+							
+						else {
+							Intent home;
 							home = new Intent(this, Conversation.class);
-						finish();
-						startActivity(home);
+							finish();
+							startActivity(home);
+						}
+
 					} else {
 						stateZero();
 					}
@@ -104,6 +111,41 @@ public class NewPassword extends Activity implements OnClickListener {
 
 			}
 		}
+	}
+
+	private void getQues() {
+		// TODO Auto-generated method stub
+		LayoutInflater li = LayoutInflater.from(this);
+		View dialogview = li.inflate(R.layout.dialog_view, null);
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		alertDialogBuilder.setView(dialogview);
+		final EditText q = (EditText) dialogview.findViewById(R.id.editText1);
+		final EditText a = (EditText) dialogview.findViewById(R.id.editText2);
+
+		alertDialogBuilder
+				.setCancelable(false)
+				.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+
+						String ques = q.getText().toString();
+						String ans = a.getText().toString();
+						if (ques.contentEquals("") || ans.contentEquals("")) {
+							Toast.makeText(NewPassword.this,
+									"Please Enter Valid Inputs",
+									Toast.LENGTH_SHORT).show();
+						} else {
+							editor.putString("ques", ques);
+							editor.putString("ans", ans);
+							editor.commit();
+							Intent i = new Intent(NewPassword.this, Conversation.class);
+							startActivity(i);
+							dialog.dismiss();
+						}
+					}
+				});
+				
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
 	}
 
 	@Override

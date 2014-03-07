@@ -1,11 +1,14 @@
 package in.sms;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -57,17 +60,10 @@ public class Password extends Activity implements OnClickListener {
 				Toast.makeText(this, "Please Enter a Valid Password",
 						Toast.LENGTH_SHORT).show();
 			} else {
-				int mode = prefs.getInt("mode", 0);
+				
 				if (password.contentEquals(prefs.getString("pass", "@#$"))) {
 					Intent home;
-					if (mode == 0)
 						home = new Intent(this, ViewSecret.class);
-					else {
-						editor.putInt("mode", 0);
-						editor.putInt("hits", 0);
-						editor.commit();
-						home = new Intent(this, NewPassword.class);
-					}
 					finish();
 					startActivity(home);
 				} else {
@@ -80,9 +76,55 @@ public class Password extends Activity implements OnClickListener {
 
 		}
 		else if(v.getId() == R.id.frgtBtn){
-			Intent i = new Intent(this, Question.class);
-			startActivity(i);
+			Log.i("forgot", "frgt pressed");
+			editor.putInt("ask", 1);
+			editor.commit();
+			getAns();
 		}
+	}
+
+	private void getAns() {
+		// TODO Auto-generated method stub
+		LayoutInflater li = LayoutInflater.from(this);
+		View dialogview = li.inflate(R.layout.dialog_view, null);
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+		alertDialogBuilder.setView(dialogview);
+		final EditText q = (EditText) dialogview.findViewById(R.id.editText1);
+		final EditText a = (EditText) dialogview.findViewById(R.id.editText2);
+		
+		q.setText(prefs.getString("ques", "Your Age"));
+		q.setKeyListener(null);
+
+		alertDialogBuilder
+				.setCancelable(false)
+				.setPositiveButton("Change passsword", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+
+						String actual = prefs.getString("ans", "20");
+						String ans = a.getText().toString();
+						if (!ans.contentEquals(actual)){
+							Toast.makeText(Password.this,
+									"Incorrect Answer",
+									Toast.LENGTH_SHORT).show();
+							a.setText("");
+						} else {
+							editor.putInt("mode", 0);
+							editor.putInt("hits", 0);
+							editor.commit();
+							Intent i = new Intent(Password.this, NewPassword.class);
+							finish();
+							startActivity(i);
+							dialog.dismiss();
+						}
+					}
+				}).setNegativeButton("Cancel",
+						new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
 	}
 
 	@Override

@@ -76,11 +76,11 @@ public class ViewSecret extends ListActivity implements OnItemClickListener {
 			String name = recent.getName(move_through_db);
 			long contactId = recent.getContactId(move_through_db);
 			String cNumber = recent.getPhoneNumber(move_through_db);
-			int isDr = recent.getDraftStatus(cNumber);
+			String dr = recent.getDraft(cNumber);
 			
 			
 			String recentConv = getRecentMsgFromConv(thread);
-			if(isDr == 0){
+			if(dr.contentEquals("")){
 				if (recentConv != null) {
 					if (timeFromConv > timeDb) {
 						msg = recentConv;
@@ -88,6 +88,8 @@ public class ViewSecret extends ListActivity implements OnItemClickListener {
 					}
 
 				}
+			}else{
+				msg = dr;
 			}
 			
 

@@ -21,8 +21,8 @@ public class RecentDB {
 	public static final String DRAFT = "draft";     // 1 for yes and 0 for no
 	// public static final String
 
-	private static final String DB_NAME = "SecretDb";
-	private static final String TABLE_NAME = "Msg";
+	private static final String DB_NAME = "RecentDB";
+	private static final String TABLE_NAME = "Recent_Msgs";
 	private static final int VERSION = 1;
 
 	private DbHelper ourHelper;
@@ -43,7 +43,7 @@ public class RecentDB {
 			db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + ROW
 					+ " INTEGER PRIMARY KEY AUTOINCREMENT, " + NAME
 					+ " TEXT NOT NULL, " + NUMBER + " TEXT NOT NULL, "
-					+ CONTACT_ID + " INTEGER NOT NULL, " + DRAFT + " INTEGER NOT NULL, "+ THREAD_ID
+					+ CONTACT_ID + " INTEGER NOT NULL, " + DRAFT + " TEXT NOT NULL, "+ THREAD_ID
 					+ " INTEGER NOT NULL, " + DATE + " INTEGER NOT NULL, " + ID
 					+ " INTEGER NOT NULL, " + MESSAGE + " TEXT NOT NULL);");
 
@@ -77,7 +77,7 @@ public class RecentDB {
 	}
 
 	public long putEntry(String dbName, String dbNumber, String dbBody,
-			long id, long date, long contactId, int thread_id, int isDraft) {
+			long id, long date, long contactId, int thread_id, String draft) {
 		// TODO Auto-generated method stub
 
 		ContentValues cv = new ContentValues();
@@ -89,7 +89,7 @@ public class RecentDB {
 		cv.put(DATE, date);
 		cv.put(CONTACT_ID, contactId);
 		cv.put(THREAD_ID, thread_id);
-		cv.put(DRAFT, isDraft);
+		cv.put(DRAFT, draft);
 		return ourDb.insert(TABLE_NAME, null, cv);
 	}
 
@@ -214,14 +214,14 @@ public class RecentDB {
 		return resNumber;
 	}
 
-	public int getDraftStatus(String number) {
+	public String getDraft(String number) {
 		// TODO Auto-generated method stub
 		Cursor c = ourDb.query(TABLE_NAME, null, NUMBER + "='" + number + "'",
 				null, null, null, null);
-		int resNumber = -1;
+		String resNumber = null;
 		if (c != null) {
 			if (c.moveToFirst()) {
-				resNumber = c.getInt(c.getColumnIndexOrThrow(DRAFT));
+				resNumber = c.getString(c.getColumnIndexOrThrow(DRAFT));
 			}
 		}
 		c.close();
@@ -278,14 +278,14 @@ public class RecentDB {
 		ourDb.update(TABLE_NAME, cvUpadte, ROW + "=" + lR, null);
 	}
 
-//	public void modify(String mNumber,) {
-//		// TODO Auto-generated method stub
-//
-//		ContentValues cvUpadte = new ContentValues();
-//		cvUpadte.put(NAME, mName);
-//		cvUpadte.put(NUMBER, mNumber);
-//		ourDb.update(TABLE_NAME, cvUpadte, NUMBER + "='" + mNumber + "'", null);
-//	}
+	public void modify(String mNumber, String draft) {
+		// TODO Auto-generated method stub
+
+		ContentValues cvUpadte = new ContentValues();
+		cvUpadte.put(DRAFT, draft);
+		cvUpadte.put(NUMBER, mNumber);
+		ourDb.update(TABLE_NAME, cvUpadte, NUMBER + "='" + mNumber + "'", null);
+	}
 	public void remove(long id) {
 		// TODO Auto-generated method stub
 		ourDb.delete(TABLE_NAME, ID + "=" + id, null);

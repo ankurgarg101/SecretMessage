@@ -6,11 +6,13 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.ContactsContract.Contacts;
 import android.view.LayoutInflater;
@@ -35,6 +37,7 @@ public class ThreadListAdapter extends ArrayAdapter<SMSData> {
 		this.smsList = smsList;
 	}
 
+	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		LayoutInflater inflater = (LayoutInflater) context
